@@ -1,0 +1,7 @@
+{
+	"name": "my-action",
+	"main": "index.js",
+	"dependencies": {
+		"box-node-sdk": "1.16.0"
+	}
+}
