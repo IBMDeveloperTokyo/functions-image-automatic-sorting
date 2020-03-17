@@ -193,13 +193,104 @@ Visual Recognitionの機能をIBM Cloud Functionsのコードから呼び出す�
 
 1. boxアプリの設定を次のように変更します。
 * 「アプリケーションアクセス」を「Enterprise」にします。
-* 「アプリケーションの範囲」で「Webhookを管理」にチェックを付けます。
+* 「アプリケーションスコープ」で「Webhookを管理」にチェックを付けます。
 * 「高度な機能」にある二つの項目を有効にします。
+
+<p align="center">
+  <img width="600" src="images/box02.png">
+</p>
+
 2. 変更したら、右上の「変更を保存」ボタンをクリックします。
 3. アプリのJWTリクエストに対する認証キーを生成します。「公開/秘密キーペアを生成」ボタンをクリックして認証後にキーが生成され、JSON形式のファイルとしてダウンロードできます。そのファイル名を「box.json」に変更し、リポジトリフォルダーの直下に配置します。
 4. さらに「2_box-watson-classify」と「3_box-file-move」のフォルダーの下にもbox.jsonファイルをコピーして配置します。
+
+<p align="center">
+  <img width="600" src="images/box03.png">
+</p>
+
 5. box開発者コンソールでアプリを認証するためのクライアントIDを確認します。同じ画面の「OAuth2.0資格情報」の「クライアントID」をコピーします。
 6. [https://app.box.com/master](https://app.box.com/master)にアクセスし、管理コンソールを表示します。左メニューの「Enterprise設定」をクリックし、「アプリ」タブをクリックします。下へスクロールして「新しいアプリケーションを承認」ボタンをクリックします。
 7. 「APIキー」にコピーしたクライアントIDを入力し、「次へ」ボタンをクリックし、確認画面で「承認」をクリックします。
 
+## サーバーレスアプリの作成
+ここでは、アップロードしたファイルをVisual Recognitionに渡して画像クラスを取得し、移動先のフォルダーのIDを判定する「box-watson-classify」アクション、box-watson-classifyアクションからフォルダー IDを取得してファイルを移動する「box-file-move」アクション、二つのアクションを接続する「box-watson-app」アクションという3種類のアクションを作成します。
 
+1. box-watson-classifyアクションの作成
+box-watson-classifyアクションを作成するためのソースコードは、「2_box-watson-classify」フォルダー内に収めています。IBM Cloud Functions CLIから次のコマンドを実行してアクションを作成します。
+    * 2_box-watson-classifyフォルダーに移動します。
+    * すべての依存関係があるパッケージをインストールした上で、action.zipにまとめます。
+    * 最後のコマンドでアクションを生成します。
+
+    「ok:  created action box-watson-classify」と表示されれば作成完了です。
+
+```
+$ cd IBMCloud_SampleApp
+$ cd 2_box-watson-classify$ npm install
+$ zip -r action.zip *
+$ ibmcloud wsk action create box-watson-classify \
+>    --kind nodejs:8 action.zip \
+>    --param-file ../vr.json
+```
+
+2. box-file-moveアクションの作成
+ box-file-moveアクションを作成する手順もほぼ同様です。ソースコードは「3_box-file-move」フォルダー内に収めています。IBM Cloud Functions CLIから次のコマンド実行してアクションを作成します。
+ こちらも「ok:  created action box-file-move」と表示されれば作成完了です。 
+
+```
+$ cd 3_box-file-move
+$ npm install
+$ zip -r action.zip *
+$ ibmcloud wsk action create box-file-move \
+>    --kind nodejs:8 action.zip
+```
+
+3. box-watson-appアクションの作成
+二つのアクションを作成したら、それをつなぐためのbox-watson-appアクションを次のコマンドで作成します。「ok:  created action box-watson-app」と表示されれば作成完了です。
+
+```
+$ ibmcloud wsk action create box-watson-app \
+>    --sequence box-watson-classify,box-file-move \
+>    --web true
+```
+
+## Webhookの設定
+作業用のBoxフォルダーにファイルがアップロードされたときにWebhookが呼ばれるようにBoxを設定します。まず、サンプルの「1_Webhook」フォルダーにある「setWebhook.js」ファイルを編集し、必要な資格情報を入力します。入力する情報としては「BoxのユーザーID」「Boxのフォルダー ID」「Webhookの送り先URL」です。 [Box開発者コンソール](https://app.box.com/developers/console/)を開いて、先ほど作成したBoxアプリ名をクリックします。「一般」の「アプリ情報」に「ユーザーID」があります。これがBoxのユーザーIDです。Boxアカウント登録時に作成した、Boxのフォルダーを開きます。URLの末尾の数字がフォルダーIDです（図35）。
+[IBM Cloud Functionsのアクション一覧画面](https://cloud.ibm.com/functions/actions)から「box-watson-app」をクリックします。左側メニューの「エンドポイント」を選びます。「Webアクション」の「パブリック」が送り先のURLになります（図36）。 それぞれコピーしたら、setWebhook.jsファイルをエディタで開き、次のように記入して保存します。
+
+```
+/* Boxの自分のユーザー IDを入力 */
+var userID = '';    //Boxのユーザー IDを入力
+
+/* 今回利用するBoxのフォルダー IDを入力 */
+var parentFolderID = '';    //Boxのフォルダー IDを入力
+
+/* Webhookの送り先のURLを入力 */
+var webhookurl = '';    //Webhookの送り先URLを入力
+```
+
+書き換えが完了したら、次のコマンドでプログラムを実行します。このプログラムは、ローカル上で動作しています。
+
+```
+$ cd IBMCloud_SampleApp/1_Webhook
+$ npm install --save box-node-sdk
+$ node setWebhook.js
+```
+
+以上でアプリが完成しました＊3。0_Watsonフォルダーの「Test_Data」フォルダーに動作確認用のファイルがあるのでそれを使って動作確認してみましょう。Box APIであれば、PDFファイルからサムネイルの画像イメージを取得することも可能です。
+
+
+# Links
+[IBM Cloudダッシュボード](https://ibm.biz/BdzKBB)
+
+# Learn more
+
+[Functionsを使ったiOSアプリケーションの作成](http://ibm.biz/functions-iosapp01)
+
+[Knativeとは何か](https://developer.ibm.com/jp/new-builders/knative/)
+
+[Knativeチュートリアル](http://ibm.biz/knative-tut-01)
+
+
+# License
+
+[Apache 2.0](LICENSE)
