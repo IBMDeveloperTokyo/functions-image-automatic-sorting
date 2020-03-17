@@ -256,9 +256,30 @@ $ ibmcloud wsk action create box-watson-app \
 ## Webhookの設定
 作業用のboxフォルダーにファイルがアップロードされたときにWebhookが呼ばれるようにBoxを設定します。
 
-1. サンプルの「1_Webhook」フォルダーにある「setWebhook.js」ファイルを編集し、必要な資格情報を入力します。入力する情報としては「BoxのユーザーID」「Boxのフォルダー ID」「Webhookの送り先URL」です。
-2. [Box開発者コンソール](https://app.box.com/developers/console/)を開いて、先ほど作成したboxアプリ名をクリックします。「一般」の「アプリ情報」に「ユーザーID」があります。これがBoxのユーザーIDです。Boxアカウント登録時に作成した、Boxのフォルダーを開きます。URLの末尾の数字がフォルダーIDです。
-3. [IBM Cloud Functionsのアクション一覧画面](https://cloud.ibm.com/functions/actions)から「box-watson-app」をクリックします。左側メニューの「エンドポイント」を選びます。「Webアクション」の「パブリック」が送り先のURLになります。それぞれコピーしたら、setWebhook.jsファイルをエディタで開き、次のように記入して保存します。
+1. サンプルの「1_Webhook」フォルダーにある「setWebhook.js」ファイルを編集し、必要な資格情報を入力します。入力する情報としては以下の3つです。
+    * BoxのユーザーID
+    * BoxのフォルダーID
+    * Webhookの送り先URL」です。
+2. ユーザーIDとフォルダーIDを取得します。
+
+    [Box開発者コンソール](https://app.box.com/developers/console/)を開いて、先ほど作成したboxアプリ名をクリックします。「一般」の「アプリ情報」に「ユーザーID」があります。これがboxのユーザーIDです。
+
+    <p align="center">
+    <img width="600" src="images/box04.png">
+    </p>
+
+    boxアカウント登録時に作成した、boxのフォルダーを開きます。URLの末尾の数字がフォルダーIDです。
+
+    <p align="center">
+    <img width="600" src="images/box05.png">
+    </p>
+
+ 3. [IBM Cloud Functionsのアクション一覧画面](https://cloud.ibm.com/functions/actions)から「box-watson-app」をクリックします。左側メニューの「エンドポイント」を選びます。「Webアクション」の「パブリック」が送り先のURLになります。それぞれコピーしたら、setWebhook.jsファイルをエディタで開き、次のように記入して保存します。
+
+    <p align="center">
+    <img width="600" src="images/box06.png">
+    </p>
+
 
 ```
 /* Boxの自分のユーザー IDを入力 */
