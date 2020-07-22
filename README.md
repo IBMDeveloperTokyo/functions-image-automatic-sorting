@@ -114,7 +114,7 @@ Visual Recognitionを各種サービスへ組み込むときのインタフェ�
 
 
 ## Watson Studioで機械学習
-1. 左上のハンバーガー（3本線）メニューから「Services」-「Watson Services」を選び、「Add Service」ボタンをクリックします。
+1. 左上のハンバーガー（3本線）メニューから「マイ・インスタンス」-「Service catalog」を選び、「AI / Machine Learning」のサービス一覧を表示します。
 
 <p align="center">
   <img width="600" src="images/watsons.png">
